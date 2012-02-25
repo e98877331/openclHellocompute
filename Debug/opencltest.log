@@ -1,0 +1,25 @@
+﻿Build started 2012/2/26 上午 12:54:00.
+     1>Project "C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\opencltest\opencltest.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\opencltest.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\Program Files (x86)\AMD APP\include" /IC:\OpenCV2.1\include\opencv /ZI /nologo /W3 /WX- /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\opencv2.1\include\opencv\cvcompat.h(803): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
+     1>c:\users\michael\documents\visual studio 2010\projects\opencltest\opencltest\main.cpp(30): warning C4244: 'initializing' : conversion from 'std::streamoff' to 'size_t', possible loss of data
+     1>c:\users\michael\documents\visual studio 2010\projects\opencltest\opencltest\main.cpp(98): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+     1>c:\users\michael\documents\visual studio 2010\projects\opencltest\opencltest\main.cpp(99): warning C4244: '=' : conversion from 'int' to 'float', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\Debug\opencltest.exe" /NOLOGO /LIBPATH:C:\OpenCV2.1\lib /LIBPATH:"C:\Program Files (x86)\AMD APP\lib\x86" OpenCL.lib cv210d.lib cxcore210d.lib highgui210d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\opencltest.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\Debug\opencltest.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\Debug\opencltest.lib" /MACHINE:X86 Debug\main.obj
+         LINK : C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\Debug\opencltest.exe not found or not built by the last incremental link; performing full link
+         opencltest.vcxproj -> C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\Debug\opencltest.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\Debug\opencltest.exe;#1" /manifest Debug\opencltest.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Debug\opencltest.unsuccessfulbuild".
+         Touching "Debug\opencltest.lastbuildstate".
+     1>Done Building Project "C:\Users\Michael\documents\visual studio 2010\Projects\opencltest\opencltest\opencltest.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.92
