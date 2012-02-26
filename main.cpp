@@ -52,9 +52,46 @@ return program;
 
 cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height)
 {
-    IplImage *Image1 = cvLoadImage(fileName,CV_LOAD_IMAGE_COLOR);
+    IplImage *Image1 = cvLoadImage(fileName,1);
+	IplImage *ImageDst = cvCreateImage(cvGetSize(Image1), IPL_DEPTH_8U ,4);;
 	width = Image1->width;
 	height = Image1->height;
+	printf("%d %d\n",width,height);
+    
+	cvCvtColor(Image1, ImageDst ,CV_RGB2RGBA);//testing
+
+
+
+
+
+	/* //show image
+	    cvNamedWindow("Show Image",0);
+
+    cvResizeWindow("Show Image",800,800);
+
+
+    cvShowImage("Show Image",ImageDst);
+
+
+    cvWaitKey(0); 
+
+    cvDestroyWindow("Show Image");
+
+    cvReleaseImage(&Image1);
+
+	//*/
+
+
+
+
+
+
+
+
+
+
+
+
     cl_int errNum;
     cl_mem clImage;
 	cl_image_format clImageFormat;
@@ -66,12 +103,12 @@ cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height)
                             width,
                             height,
                             0,
-							Image1->imageData,
+							ImageDst->imageData,
                             &errNum);
 
 	    if (errNum != CL_SUCCESS)
     {
-        std::cerr << "Error creating CL image object" << std::endl;
+        std::cerr << "Error creating CL image object" <<errNum<< std::endl;
         return 0;
     }
 
@@ -124,6 +161,7 @@ cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height)
 
 int main()
 {
+cl_mem imageObjects[2] = { 0, 0 };
 cl_int err;
 cl_uint num;
 err = clGetPlatformIDs(0, 0, &num);
@@ -206,6 +244,11 @@ clReleaseCommandQueue(queue);
 clReleaseContext(context);
 return 0;
 }
+
+int width,height;
+imageObjects[0] = LoadImage(context, "aaa.jpg", width, height);
+
+
 
 clSetKernelArg(adder, 0, sizeof(cl_mem), &cl_a);
 clSetKernelArg(adder, 1, sizeof(cl_mem), &cl_b);
