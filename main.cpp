@@ -22,6 +22,7 @@ cl_program load_program(cl_context context, const char* filename)
 {
 std::ifstream in(filename, std::ios_base::binary);
 if(!in.good()) {
+	std::cerr<<"ifstream in not goot"<<std::endl;
 return 0;
 }
 
@@ -39,10 +40,12 @@ data[length] = 0;
 const char* source = &data[0];
 cl_program program = clCreateProgramWithSource(context, 1, &source, 0, 0);
 if(program == 0) {
+	std::cerr<<"clCreateProgramwithSource fault"<<std::endl;
 return 0;
 }
 
 if(clBuildProgram(program, 0, 0, 0, 0, 0) != CL_SUCCESS) {
+	std::cerr<<"clBuildProgram fault"<<std::endl;
 return 0;
 }
 
@@ -56,42 +59,22 @@ cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height)
 	IplImage *ImageDst = cvCreateImage(cvGetSize(Image1), IPL_DEPTH_8U ,4);;
 	width = Image1->width;
 	height = Image1->height;
-	printf("%d %d\n",width,height);
+	printf("Image name: %s , width:%d, height:%d\n",fileName,width,height);
     
 	cvCvtColor(Image1, ImageDst ,CV_RGB2RGBA);//testing
 
-
-
-
-
-	/* //show image
+	 //show image
 	    cvNamedWindow("Show Image",0);
 
     cvResizeWindow("Show Image",800,800);
-
-
-    cvShowImage("Show Image",ImageDst);
-
-
+    cvShowImage("Show Image",Image1);
+	std::cout<<"This is origional image, press any key to do opencl process"<<std::endl;
     cvWaitKey(0); 
-
+	std::cout<<"processing"<<std::endl;
     cvDestroyWindow("Show Image");
-
     cvReleaseImage(&Image1);
 
 	//*/
-
-
-
-
-
-
-
-
-
-
-
-
     cl_int errNum;
     cl_mem clImage;
 	cl_image_format clImageFormat;
@@ -112,7 +95,8 @@ cl_mem LoadImage(cl_context context, char *fileName, int &width, int &height)
         return 0;
     }
 
-
+//		printf("%s\n",clImage);
+//	printf("--------------------------------------------------\n");
 
 
 /*
@@ -202,7 +186,8 @@ clReleaseContext(context);
 return 0;
 }
 
-const int DATA_SIZE = 1048576;
+/*
+const int DATA_SIZE =1048576;
 std::vector<float> a(DATA_SIZE), b(DATA_SIZE), res(DATA_SIZE);
 for(int i = 0; i < DATA_SIZE; i++) {
 a[i] = std::rand();
@@ -221,13 +206,45 @@ clReleaseCommandQueue(queue);
 clReleaseContext(context);
 return 0;
 }
+*/
+
+
+int width,height;
+imageObjects[0] = LoadImage(context, "aaa.jpg", width, height);
+   if (imageObjects[0] == 0)
+    {
+        std::cerr << "Error loading: aaa.jpg"<< std::endl;
+        return 1;
+    }
+
+    // Create ouput image object
+    cl_image_format clImageFormat;
+    clImageFormat.image_channel_order = CL_RGBA;
+    clImageFormat.image_channel_data_type = CL_UNORM_INT8;
+    imageObjects[1] = clCreateImage2D(context,
+                                       CL_MEM_WRITE_ONLY,
+                                       &clImageFormat,
+                                       width,
+                                       height,
+                                       0,
+                                       NULL,
+                                       &err);
+
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "Error creating CL output image object." << std::endl;
+        return 1;
+    }
+
+
+
 
 cl_program program = load_program(context, "shader.cl");
 if(program == 0) {
 std::cerr << "Can't load or build program\n";
-clReleaseMemObject(cl_a);
-clReleaseMemObject(cl_b);
-clReleaseMemObject(cl_res);
+//clReleaseMemObject(cl_a);
+//clReleaseMemObject(cl_b);
+//clReleaseMemObject(cl_res);
 clReleaseCommandQueue(queue);
 clReleaseContext(context);
 return 0;
@@ -237,23 +254,126 @@ cl_kernel adder = clCreateKernel(program, "adder", 0);
 if(adder == 0) {
 std::cerr << "Can't load kernel\n";
 clReleaseProgram(program);
-clReleaseMemObject(cl_a);
-clReleaseMemObject(cl_b);
-clReleaseMemObject(cl_res);
+//clReleaseMemObject(cl_a);
+//clReleaseMemObject(cl_b);
+//clReleaseMemObject(cl_res);
 clReleaseCommandQueue(queue);
 clReleaseContext(context);
 return 0;
 }
 
-int width,height;
-imageObjects[0] = LoadImage(context, "aaa.jpg", width, height);
+
+    // Create sampler for sampling image object
+    cl_sampler sampler = clCreateSampler(context,
+                              CL_FALSE, // Non-normalized coordinates
+                              CL_ADDRESS_CLAMP_TO_EDGE,
+                              CL_FILTER_NEAREST,
+                              &err);
+
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "Error creating CL sampler object." << std::endl;
+      
+        return 1;
+    }
 
 
 
-clSetKernelArg(adder, 0, sizeof(cl_mem), &cl_a);
-clSetKernelArg(adder, 1, sizeof(cl_mem), &cl_b);
-clSetKernelArg(adder, 2, sizeof(cl_mem), &cl_res);
+//set arg
+    err = clSetKernelArg(adder, 0, sizeof(cl_mem), &imageObjects[0]);
+    err |= clSetKernelArg(adder, 1, sizeof(cl_mem), &imageObjects[1]);
+    err |= clSetKernelArg(adder, 2, sizeof(cl_sampler), &sampler);
+    err |= clSetKernelArg(adder, 3, sizeof(cl_int), &width);
+    err |= clSetKernelArg(adder, 4, sizeof(cl_int), &height);
 
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "Error setting kernel arguments." << std::endl;
+        system("PAUSE");
+        return 1;
+    }
+//clSetKernelArg(adder, 0, sizeof(cl_mem), &cl_a);
+//clSetKernelArg(adder, 1, sizeof(cl_mem), &cl_b);
+//clSetKernelArg(adder, 2, sizeof(cl_mem), &cl_res);
+    size_t globalWorkSize[2] =  { width,
+                                  height };
+
+    // Queue the kernel up for execution
+    err = clEnqueueNDRangeKernel(queue, adder, 2, NULL,
+                                    globalWorkSize, 0,
+                                    0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "Error queuing kernel for execution." << std::endl;
+        //Cleanup(context, commandQueue, program, kernel, imageObjects, sampler);
+        return 1;
+    }
+
+
+
+	    // Read the output buffer back to the Host
+    char *buffer = new char [width * height * 4];
+    size_t origin[3] = { 0, 0, 0 };
+    size_t region[3] = { width, height, 1};
+    err = clEnqueueReadImage(queue, imageObjects[1], CL_TRUE,
+                                origin, region, 0, 0, buffer,
+                                0, NULL, NULL);
+    if (err != CL_SUCCESS)
+    {
+        std::cerr << "Error reading result buffer." << std::endl;
+       // Cleanup(context, commandQueue, program, kernel, imageObjects, sampler);
+        return 1;
+    }
+
+	
+	 //show image
+	IplImage *outImage = cvCreateImageHeader(cvSize(width,height),IPL_DEPTH_8U,4);
+	  cvSetData(outImage,buffer,width*4);
+	
+	
+	/*/convert RGBA to BGR
+	IplImage *bgrImage = cvCreateImage(cvSize(width,height),IPL_DEPTH_8U,3);
+  
+    cvCvtColor(outImage, bgrImage ,CV_RGBA2BGR);//testing
+	//*/
+		
+           /*/ debug use 
+		for(int i = 1900;i <height;i++)
+			for(int j = 2250;j< width;j++)
+			{
+				CvScalar s = cvGet2D(bgrImage, i,j);
+				printf("%lf %lf %lf %lf i = %d , j = %d\n",s.val[0],s.val[1],s.val[2],s.val[3],i,j);
+			}
+
+			/*/
+
+
+
+	    cvNamedWindow("Show Image",0);
+
+    cvResizeWindow("Show Image",800,800);
+
+
+    cvShowImage("Show Image",outImage);
+
+	std::cout<<"grayscale image by opencl"<<std::endl;
+    cvWaitKey(0); 
+
+    cvDestroyWindow("Show Image");
+
+//    cvReleaseImage(&outImage);
+
+	//*/
+
+
+
+
+
+
+	  std::cout << std::endl;
+    std::cout << "Executed program succesfully." << std::endl;
+	
+	/*
 size_t work_size = DATA_SIZE;
 err = clEnqueueNDRangeKernel(queue, adder, 1, 0, &work_size, 0, 0, 0, 0);
 
@@ -277,7 +397,7 @@ std::cout << "Data is correct\n";
 
 
 //opencv test
-/*
+
     char FileName[10]="aaa.jpg";
 
     IplImage *Image1 = cvLoadImage(FileName,CV_LOAD_IMAGE_COLOR);
@@ -309,13 +429,7 @@ std::cout << "Data is correct\n";
     cvReleaseImage(&Image1);
 
 
-	*/
-
-
-
-
-
-
+	
 
 
 
@@ -328,12 +442,12 @@ std::cout << "Data is incorrect\n";
 else {
 std::cerr << "Can't run kernel or read back data\n";
 }
-
+*/
 clReleaseKernel(adder);
 clReleaseProgram(program);
-clReleaseMemObject(cl_a);
-clReleaseMemObject(cl_b);
-clReleaseMemObject(cl_res);
+//clReleaseMemObject(cl_a);
+//clReleaseMemObject(cl_b);
+//clReleaseMemObject(cl_res);
 clReleaseCommandQueue(queue);
 clReleaseContext(context);
 
